@@ -142,7 +142,7 @@ int main() {
 
     iter++; // iteration counter++
 
-    // вывод сообщения об ошибке, если достигнуто максимальное число итераций
+    // message about reaching the maximum number of iterations
     if (iter == max_iter) {
       cout << "Maximum number of iterations reached!" << endl;
     }
