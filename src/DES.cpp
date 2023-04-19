@@ -39,6 +39,10 @@ double runge45(double t, double y0, double *step, double tol) {
   double h2 = *step / 2.0;
   double h6 = *step / 6.0;
 
+  if (*step < 1e-6) {
+    return y0;
+  }
+
   k1 = *step * f(t, y0);
   k2 = *step * f(t + h2, y0 + k1 / 2.0);
   k3 = *step * f(t + h2, y0 + k2 / 2.0);
@@ -54,22 +58,22 @@ double runge45(double t, double y0, double *step, double tol) {
 
   if (delta > 1.0) {
     // Reduce step size if error is too high
-    *step *= 0.9 * pow(delta, -0.2);
-  } else if (delta > 0.5) {
+    *step *= 0.5 * pow(delta, -0.2);
+  } else if (delta > 0.01) {
     // Reduce step size more gradually if error is moderate
     *step *= 0.9;
-  } else if (delta > 0.1) {
+  } else if (delta > 0.0001) {
     // Increase step size if error is small
-    *step *= 1.1;
+    *step *= 1.5;
   } else {
     // Increase step size more if error is very small
-    *step *= 1.5;
+    *step *= 2.0;
   }
 
   y0 = y5;
   t += *step;
 
-//  cout << "step = " << *step << endl;
+  //  cout << "step = " << *step << endl;
   return y0;
 }
 
@@ -122,12 +126,26 @@ int main() {
 
   // With step adjustment
   t = 0;
-
-  while (t < T) {
+  int max_iter = 15;
+  int iter = 0; // iteration counter
+  while (t < T && iter < max_iter) {
+    // calculation of the time step and the Runge-Kutta method
     double dy = runge45(t, y.back(), &step, tol);
     y.push_back(dy);
     t += step;
     time.push_back(t);
+
+    // checking to reach time T
+    if (t + step > T) {
+      step = T - t;
+    }
+
+    iter++; // iteration counter++
+
+    // вывод сообщения об ошибке, если достигнуто максимальное число итераций
+    if (iter == max_iter) {
+      cout << "Maximum number of iterations reached!" << endl;
+    }
   }
   max_delta = calcMaxDelta(C, y, time, step);
   cout << "\nMaximum deviation with step adjustment: " << max_delta << "\n"
